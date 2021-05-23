@@ -1,0 +1,2 @@
+my_robot
+-DCATKIN_DEVEL_PREFIX=/home/tulgaa/Desktop/ros_py3/ws/devel -DCMAKE_INSTALL_PREFIX=/home/tulgaa/Desktop/ros_py3/ws/install -G Unix Makefiles

@@ -1,0 +1,314 @@
+<?xml version="1.0"?>
+<robot name="differential_wheeled_robot" xmlns:xacro="http://ros.org/wiki/xacro">
+
+<xacro:include filename="$(find my_robot)/urdf/wheel.urdf.xacro" /> 
+ 
+<!-- Defining the colors used in this robot -->
+<material name="Black">
+  <color rgba="0.0 0.0 0.0 1.0"/>
+</material>
+
+<material name="Red">
+  <color rgba="0.8 0.0 0.0 1.0"/>
+</material>
+
+<material name="White">
+  <color rgba="1.0 1.0 1.0 1.0"/>
+</material>
+
+<material name="Blue">
+  <color rgba="0.0 0.0 0.8 1.0"/>
+</material>
+
+<!-- PROPERTY LIST -->
+<!--All units in m-kg-s-radians unit system -->
+<xacro:property name="M_PI" value="3.1415926535897931" />
+<xacro:property name="M_PI_2" value="1.570796327" />
+<xacro:property name="DEG_TO_RAD" value="0.017453293" />
+<xacro:property name="deg_to_rad" value="0.017453293" />
+<!-- Main body radius and height -->
+<!-- Main Body Cylinder base   -->
+<xacro:property name="base_height" value="0.04" /> 
+<xacro:property name="base_radius" value="0.15" /> 
+<xacro:property name="base_mass" value="5" /> <!-- in kg-->
+
+<!-- caster wheel radius and height -->
+<!-- caster wheel mass -->
+<xacro:property name="caster_f_radius" value="0.029" /> 
+<xacro:property name="caster_f_mass" value="0.5" /> <!-- in kg-->
+
+<xacro:property name="caster_b_radius" value="0.029" /> 
+<xacro:property name="caster_b_mass" value="0.5" /> <!-- in kg-->
+
+<!-- Wheels -->
+<xacro:property name="wheel_mass" value="2.5" /> --> <!-- in kg-->
+
+<xacro:property name="base_x_origin_to_wheel_origin" value="0.25" />
+<xacro:property name="base_y_origin_to_wheel_origin" value="0.3" />
+<xacro:property name="base_z_origin_to_wheel_origin" value="0" />
+ 
+<!-- Hokuyo Laser scanner -->
+<xacro:property name="hokuyo_size" value="0.01" />
+<xacro:property name="camera_base_lenth" value="0.25" />
+
+<xacro:macro name="sphere_inertia" params="m r">
+  <inertia  ixx="${2*m*r*r/5}" ixy = "0" ixz = "0"
+            iyy="${2*m*r*r/5}" iyz = "0"
+            izz="${2*m*r*r/5}"/> 
+</xacro:macro>
+
+
+<!-- BASE-FOOTPRINT -->
+<!-- base_footprint is a fictitious link(frame) that is on the ground right below base_link origin -->
+<link name="base_footprint">
+  <inertial>
+    <mass value="0.0001" />
+    <origin xyz="0 0 0" />
+    <inertia ixx="0.0001" ixy="0.0" ixz="0.0"
+             iyy="0.0001" iyz="0.0" 
+             izz="0.0001" />
+  </inertial>
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <box size="0.001 0.001 0.001" />
+    </geometry>
+  </visual>
+</link>
+
+<gazebo reference="base_footprint">
+  <turnGravityOff>false</turnGravityOff>
+</gazebo>
+
+<joint name="base_footprint_joint" type="fixed">
+  <origin xyz="0 0 ${wheel_radius - base_z_origin_to_wheel_origin}" rpy="0 0 0" />
+  <parent link="base_footprint"/>
+  <child link="base_link" />
+</joint>
+
+<!-- BASE-LINK -->
+<!--Actual body/chassis of the robot-->
+<link name="base_link">
+  <inertial>
+    <mass value="${base_mass}" />
+    <origin xyz="0 0 0" />
+    <!--The 3x3 rotational inertia matrix. -->
+    <cylinder_inertia  m="${base_mass}" r="${base_radius}" h="${base_height}" />
+  </inertial>
+
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+        <cylinder length="${base_height}" radius="${base_radius}" />
+    </geometry>
+    <material name="White" />
+  </visual>
+
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0 " />
+    <geometry>
+      <cylinder length="${base_height}" radius="${base_radius}" />
+    </geometry>
+  </collision>
+</link>
+
+<gazebo reference="base_link">
+  <material>Gazebo/Black</material>
+  <turnGravityOff>false</turnGravityOff>
+</gazebo>
+
+
+<!--Caster front  -->
+<link name="caster_front_link">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <sphere radius="${caster_f_radius}" />
+    </geometry>
+    <material name="White" />
+  </visual>  
+
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <sphere radius="${caster_f_radius}" />
+    </geometry>
+  </collision>
+
+  <inertial>
+    <mass value="${caster_f_mass}" />
+    <origin xyz="0 0 0" />
+    <sphere_inertia  m="${caster_f_mass}" r="${caster_f_radius}"/>
+  </inertial>
+</link>
+
+<joint name="caster_front_joint" type="fixed">
+  <parent link="base_link"/>
+  <child link="caster_front_link"/>
+  <origin xyz="0.1 0 -0.01" rpy="0 0 0"/>
+</joint>
+
+<gazebo reference="caster_front_link">
+  <turnGravityOff>false</turnGravityOff>
+</gazebo>
+
+<!--Caster back  -->
+<link name="caster_back_link">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" /> 
+    <geometry>
+      <sphere radius="${caster_b_radius}" />
+    </geometry>
+    <material name="White"/>
+  </visual>
+
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0" /> 
+    <geometry>
+      <sphere radius="${caster_b_radius}" />
+    </geometry>
+  </collision>
+
+  <inertial>
+    <mass value="${caster_b_mass}" />
+    <origin xyz="0 0 0" />        
+    <sphere_inertia  m="${caster_b_mass}" r="${caster_b_radius}"/>
+  </inertial>
+</link>
+
+<joint name="caster_back_joint" type="fixed">
+  <parent link="base_link"/>
+  <child link="caster_back_link"/>
+  <origin xyz="-0.1 0 -0.01" rpy="0 0 0"/>
+</joint>
+
+<gazebo reference="caster_back_link">
+  <turnGravityOff>false</turnGravityOff>
+</gazebo>
+
+<!-- ###################################################################### -->
+<!--Caster front back -->
+<link name="caster_back_up_link">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <sphere radius="${caster_f_radius + 0.01}" />
+    </geometry>
+    <material name="White" />
+  </visual>  
+
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <sphere radius="${caster_f_radius + 0.01}" />
+    </geometry>
+  </collision>
+
+  <inertial>
+    <mass value="${caster_f_mass}" />
+    <origin xyz="0 0 0" />
+    <sphere_inertia  m="${caster_f_mass}" r="${caster_f_radius}"/>
+  </inertial>
+</link>
+
+<joint name="caster_back_up_joint" type="fixed">
+  <parent link="base_link"/>
+  <child link="caster_back_up_link"/>
+  <origin xyz="${-0.05 - caster_f_radius} 0 0.04" rpy="0 0 0"/>
+</joint>
+
+<gazebo reference="caster_back_up_link">
+  <turnGravityOff>false</turnGravityOff>
+</gazebo>
+<!-- ###################################################################### -->
+
+<!-- Wheel Definitions -->
+<wheel fb="front" lr="right" parent="base_link" translateX="0" translateY="0.5" flipY="1"/>
+<wheel fb="front" lr="left" parent="base_link" translateX="0" translateY="-0.5" flipY="1"/>
+
+<!-- hokuyo -->
+<link name="hokuyo_link">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <box size="${hokuyo_size} ${hokuyo_size} 0.1"/>
+    </geometry>
+    <material name="Blue" />
+  </visual>
+</link>
+<joint name="hokuyo_joint" type="fixed">
+  <origin xyz="0 0 0.05" rpy="0 0 0" />
+  <parent link="base_link"/>
+  <child link="hokuyo_link" />
+</joint>
+<gazebo reference="hokuyo_link">
+  <material>Gazebo/Blue</material>
+  <turnGravityOff>false</turnGravityOff>
+  <sensor type="ray" name="head_hokuyo_sensor">
+    <pose>0 0 0 0 0 0</pose>
+    <visualize>true</visualize>
+    <update_rate>200</update_rate>
+    <ray>
+      <scan>
+        <horizontal>
+          <samples>5</samples> <!-- Number of sensors-->
+          <resolution>1</resolution>
+          <min_angle>-1.57</min_angle> <!-- Viewing angle-->
+          <max_angle>1.57</max_angle> <!-- Viewing angle-->
+        </horizontal>
+      </scan>
+      <range>
+        <min>0</min>
+        <max>0.6</max>
+        <resolution>0.01</resolution>
+      </range>
+    </ray>
+    <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
+      <topicName>/scan</topicName>
+      <frameName>hokuyo_link</frameName>
+    </plugin>
+  </sensor>
+</gazebo>
+ 
+<!-- Differential drive controller  -->
+<gazebo>
+  <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
+    <legacyMode>true</legacyMode>
+    <rosDebugLevel>0</rosDebugLevel>
+    <publishWheelTF>false</publishWheelTF>
+    <robotNamespace>/</robotNamespace>
+    <publishTf>1</publishTf>
+    <publishWheelJointState>false</publishWheelJointState>
+    <alwaysOn>true</alwaysOn>
+    <updateRate>100.0</updateRate>
+    <leftJoint>front_left_wheel_joint</leftJoint>
+    <rightJoint>front_right_wheel_joint</rightJoint>
+    <wheelSeparation>${2*base_radius}</wheelSeparation>
+    <wheelDiameter>${2*wheel_radius}</wheelDiameter>
+    <broadcastTF>1</broadcastTF>
+    <wheelTorque>30</wheelTorque>
+    <wheelAcceleration>1.8</wheelAcceleration>
+    <commandTopic>cmd_vel</commandTopic>
+    <odometryFrame>odom</odometryFrame> 
+    <odometryTopic>odom</odometryTopic> 
+    <robotBaseFrame>base_footprint</robotBaseFrame>
+  </plugin>
+</gazebo>
+<gazebo>
+  <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
+    <alwaysOn>true</alwaysOn>
+    <bodyName>base_link</bodyName>
+    <topicName>imu</topicName>
+    <serviceName>imu_service</serviceName>
+    <gaussianNoise>0.0</gaussianNoise>
+    <rpyOffsets>0 0 0</rpyOffsets>
+    <accelDrift>0.5 0.5 0.5</accelDrift>
+    <accelGaussianNoise>0.35 0.35 0.3</accelGaussianNoise>
+    <rateDrift>0.0 0.0 0.0</rateDrift>
+    <rateGaussianNoise>0.00 0.00 0.00</rateGaussianNoise>
+    <headingDrift>0.0</headingDrift>
+    <headingGaussianNoise>0.00</headingGaussianNoise>
+    <updateRate>00</updateRate>
+  </plugin>
+</gazebo>
+</robot>

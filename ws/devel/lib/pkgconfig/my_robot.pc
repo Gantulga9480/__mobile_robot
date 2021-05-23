@@ -1,0 +1,8 @@
+prefix=/home/tulgaa/Desktop/ros_py3/ws/devel
+
+Name: my_robot
+Description: Description of my_robot
+Version: 0.0.0
+Cflags: -I/home/tulgaa/Desktop/ros_py3/ws/devel/include
+Libs: -L${prefix}/lib 
+Requires: message_runtime

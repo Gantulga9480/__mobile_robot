@@ -1,0 +1,11 @@
+# generated from genmsg/cmake/pkg-genmsg.context.in
+
+messages_str = "/home/tulgaa/Desktop/ros_py3/ws/src/my_robot/msg/board.msg;/home/tulgaa/Desktop/ros_py3/ws/src/my_robot/msg/next_move.msg;/home/tulgaa/Desktop/ros_py3/ws/src/my_robot/msg/board_cmd.msg"
+services_str = ""
+pkg_name = "my_robot"
+dependencies_str = "std_msgs"
+langs = "gencpp;geneus;genlisp;gennodejs;genpy"
+dep_include_paths_str = "my_robot;/home/tulgaa/Desktop/ros_py3/ws/src/my_robot/msg;std_msgs;/opt/ros/melodic/share/std_msgs/cmake/../msg"
+PYTHON_EXECUTABLE = "/usr/bin/python3"
+package_has_static_sources = '' == 'TRUE'
+genmsg_check_deps_script = "/opt/ros/melodic/share/genmsg/cmake/../../../lib/genmsg/genmsg_check_deps.py"
