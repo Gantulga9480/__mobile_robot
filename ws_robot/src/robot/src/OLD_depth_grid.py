@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 from utils import *
 from sensor_msgs.msg import Image
+# from std_msgs.msg import Int32MultiArray
 from robot.msg import value_table
 import rospy
 import numpy as np

@@ -21,6 +21,8 @@ int robot_radius, ball_radius = 0;
 int dir_vect[2];
 int dir;
 
+int frame_count = 0;
+
 void cb(const sensor_msgs::ImageConstPtr& msg)
 {
     cv_bridge::CvImagePtr cv_ptr;
@@ -40,7 +42,7 @@ void cb(const sensor_msgs::ImageConstPtr& msg)
     // GaussianBlur( image0, image0, Size(9, 9), 2, 2 );
     vector<Vec3f> robot, ball;
     HoughCircles(image0, robot, HOUGH_GRADIENT, 1, 1, 150, 5, 34, 36);
-    HoughCircles(image0, ball, HOUGH_GRADIENT, 1, 1, 150, 5, 10, 12);
+    HoughCircles(image0, ball, HOUGH_GRADIENT, 1, 1, 150, 5, 9, 11);
     for(size_t i = 0; i < robot.size(); i++)
     {
         if (is_placed)
@@ -62,14 +64,17 @@ void cb(const sensor_msgs::ImageConstPtr& msg)
             break;
         }
     }
-    for(size_t i = 0; i < robot.size(); i++)
+    for(size_t i = 0; i < ball.size(); i++)
     {
         if ((abs(ball[i][0] - center_tmp[0]) < 10) && (abs(ball[i][1] - center_tmp[1]) < 30))
         {
-            ball_radius = cvRound(ball[i][2]);
-            ball_tmp[0] = ball[i][0];
-            ball_tmp[1] = ball[i][1];
-            break;
+            if (cv_ptr->image.at<Vec3b>(ball[i][0], ball[i][1])[0] > 200)
+            {
+                ball_radius = cvRound(ball[i][2]);
+                ball_tmp[0] = ball[i][0];
+                ball_tmp[1] = ball[i][1];
+                break;
+            }
         }
     }
     try
@@ -90,15 +95,18 @@ void cb(const sensor_msgs::ImageConstPtr& msg)
             dir = 270;
     }
     catch (exception& e)
-    {
-
-    }
+    {}
     circle(cv_ptr->image, Point(center_tmp[0], center_tmp[1]), 3, Scalar(0,255,0), -1, 8, 0);
     circle(cv_ptr->image, Point(center_tmp[0], center_tmp[1]), robot_radius, Scalar(0,0,255), 3, 8, 0);
     circle(cv_ptr->image, Point(ball_tmp[0], ball_tmp[1]), 3, Scalar(0,255,0), -1, 8, 0);
     circle(cv_ptr->image, Point(ball_tmp[0], ball_tmp[1]), ball_radius, Scalar(255,0,255), 3, 8, 0);
+    if (frame_count % 10 == 0)
+    {
+        // imwrite(to_string(frame_count)+"_img.jpg", cv_ptr->image);
+    }
     imshow(OPENCV_WINDOW, cv_ptr->image);
     waitKey(1);
+    frame_count++;
 }
 
 int main(int argc, char **argv)
